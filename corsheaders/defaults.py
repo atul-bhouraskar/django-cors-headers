@@ -1,4 +1,5 @@
 from django.conf import settings
+import django.core.urlresolvers
 
 default_headers = (
     'x-requested-with',
@@ -46,3 +47,13 @@ CORS_REPLACE_HTTPS_REFERER = getattr(
     settings,
     'CORS_REPLACE_HTTPS_REFERER',
     False)
+
+CORS_CUSTOM_DOMAIN_MATCH = getattr(
+    settings,
+    'CORS_CUSTOM_DOMAIN_MATCH',
+    None)
+
+custom_domain_match = django.core.urlresolvers.get_callable(
+    CORS_CUSTOM_DOMAIN_MATCH) if CORS_CUSTOM_DOMAIN_MATCH else None
+if not callable(custom_domain_match):
+    custom_domain_match = None
