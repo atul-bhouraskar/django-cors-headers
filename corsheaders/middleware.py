@@ -6,8 +6,13 @@ try:
 except ImportError:
     from urllib.parse import urlparse
 
+try:
+    from django.apps import apps
+    get_model = apps.get_model
+except ImportError:
+    from django.db.models.loading import get_model
+
 from corsheaders import defaults as settings
-from django.db.models.loading import get_model
 
 
 ACCESS_CONTROL_ALLOW_ORIGIN = 'Access-Control-Allow-Origin'
@@ -58,11 +63,14 @@ class CorsMiddleware(object):
                     self.origin_not_found_in_white_lists(origin, url)):
                 return
 
-            request.META = request.META.copy()
-            http_referer = request.META['HTTP_REFERER']
-            request.META['ORIGINAL_HTTP_REFERER'] = http_referer
-            http_host = "https://%s/" % request.META['HTTP_HOST']
-            request.META['HTTP_REFERER'] = http_host
+            try:
+                http_referer = request.META['HTTP_REFERER']
+                http_host = "https://%s/" % request.META['HTTP_HOST']
+                request.META = request.META.copy()
+                request.META['ORIGINAL_HTTP_REFERER'] = http_referer
+                request.META['HTTP_REFERER'] = http_host
+            except KeyError:
+                pass
 
     def process_request(self, request):
         """
